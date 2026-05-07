@@ -1,0 +1,1208 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Syringe, 
+  Bandage, 
+  Stethoscope, 
+  Printer, 
+  BookOpen, 
+  Calculator, 
+  Info,
+  CalendarDays,
+  User,
+  AlertCircle,
+  Dog,
+  Download,
+  CopyPlus,
+  Hand,
+  Droplet,
+  HandHeart,
+  ShieldCheck,
+  Activity,
+  Baby,
+  HeartPulse,
+  AlertTriangle,
+  Lightbulb
+} from 'lucide-react';
+
+// --- Reference Section Component ---
+const ReferenceSection = ({ activeTab }) => {
+  let refs = [];
+  if (activeTab === 'rabies') {
+    refs = [
+      'แนวทางการดูแลรักษาผู้ป่วยสัมผัสโรคพิษสุนัขบ้า สถานเสาวภา สภากาชาดไทย (พ.ศ. 2561)',
+      'แผนงานสร้างเสริมภูมิคุ้มกันโรค กรมควบคุมโรค กระทรวงสาธารณสุข',
+      'The Sanford Guide to Antimicrobial Therapy (อ้างอิงสำหรับการเลือกใช้ยาปฏิชีวนะในแผลสัตว์กัด)'
+    ];
+  } else if (activeTab === 'tetanus') {
+    refs = [
+      'แนวทางการให้วัคซีนบาดทะยัก (Tetanus prophylaxis in wound management) สำหรับผู้ป่วยที่มีบาดแผล',
+      'คู่มือสร้างเสริมภูมิคุ้มกันโรค กรมควบคุมโรค กระทรวงสาธารณสุข'
+    ];
+  } else if (activeTab === 'hbv') {
+    refs = [
+      'แนวทางการให้วัคซีนตับอักเสบบี กรมควบคุมโรค กระทรวงสาธารณสุข',
+      'ตารางการให้วัคซีน แนะนำโดยสมาคมโรคติดเชื้อในเด็กแห่งประเทศไทย (PIDST)'
+    ];
+  } else if (activeTab === 'pediatric') {
+    refs = [
+      'ตารางการให้วัคซีนในเด็กไทย แนะนำโดยสมาคมโรคติดเชื้อในเด็กแห่งประเทศไทย (PIDST) ปีล่าสุด (2566/2567)',
+      'แผนงานสร้างเสริมภูมิคุ้มกันโรค กรมควบคุมโรค กระทรวงสาธารณสุข (EPI)'
+    ];
+  }
+
+  return (
+    <div className="bg-white/80 border border-blue-200 p-5 rounded-3xl text-sm text-gray-600 shadow-sm mt-8 animate-fade-in no-print">
+      <h4 className="font-bold text-gray-800 mb-3 border-b border-gray-200 pb-2 flex items-center gap-2">
+        <Info className="w-5 h-5 text-blue-500" /> ที่มาและแหล่งอ้างอิง (References)
+      </h4>
+      <ul className="list-disc pl-5 space-y-2">
+        {refs.map((ref, idx) => (
+          <li key={idx} className="text-gray-700 leading-relaxed">{ref}</li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+// --- Vaccine Tooltip Helper ---
+const getVaccineInfo = (vaccineName) => {
+  if (vaccineName.includes('BCG')) return { se: 'อาจมีตุ่มหนองเกิดขึ้นบริเวณที่ฉีดใน 2-4 สัปดาห์', advice: 'ห้ามบีบ เจาะ หรือทายาบริเวณตุ่มหนอง ให้ซับด้วยสำลีสะอาดเวลาอาบน้ำ' };
+  if (vaccineName.includes('HBV')) return { se: 'อาจมีอาการปวด บวม แดง บริเวณที่ฉีด หรือไข้ต่ำๆ', advice: 'ประคบเย็นบริเวณที่ฉีด หากมีไข้ให้รับประทานยาลดไข้' };
+  if (vaccineName.includes('DTP')) return { se: 'มักมีไข้ (อาจสูง) ร้องกวน ปวดบวมแดงบริเวณที่ฉีด', advice: 'เช็ดตัวลดไข้ รับประทานยาลดไข้ทุก 4-6 ชม. ประคบเย็นบริเวณที่บวม' };
+  if (vaccineName.includes('OPV')) return { se: 'แทบไม่มีอาการข้างเคียงที่พบได้บ่อย', advice: 'งดดื่มนม/น้ำร้อน หรืออาหารร้อน 30 นาทีหลังหยอดวัคซีน' };
+  if (vaccineName.includes('IPV')) return { se: 'อาจมีอาการปวด บวม แดง บริเวณที่ฉีด หรือไข้ต่ำๆ', advice: 'ประคบเย็นบริเวณที่ฉีด รับประทานยาลดไข้เมื่อมีอาการ' };
+  if (vaccineName.includes('Rota')) return { se: 'อาจมีไข้ต่ำๆ ถ่ายเหลว หรืออาเจียนเล็กน้อย', advice: 'ดูแลให้ดื่มน้ำ/นมให้เพียงพอ ล้างมือให้สะอาดหลังเปลี่ยนผ้าอ้อมเด็ก' };
+  if (vaccineName.includes('MMR')) return { se: 'อาจมีไข้ต่ำๆ หรือมีผื่นจางๆ คล้ายหัดขึ้นหลังฉีด 5-12 วัน', advice: 'รับประทานยาลดไข้ อาการจะหายไปเองใน 2-3 วัน' };
+  if (vaccineName.includes('LAJE')) return { se: 'อาจมีอาการปวด บวม แดง บริเวณที่ฉีด หรือไข้ต่ำๆ', advice: 'ประคบเย็นบริเวณที่ฉีด รับประทานยาลดไข้' };
+  if (vaccineName.includes('VZV')) return { se: 'อาจมีไข้ หรือมีตุ่มน้ำใส 2-3 ตุ่มบริเวณที่ฉีด (พบไม่บ่อย)', advice: 'รับประทานยาลดไข้ ห้ามแกะเกาตุ่มน้ำ' };
+  if (vaccineName.includes('HepA')) return { se: 'ปวด บวม แดงบริเวณที่ฉีด ไข้ต่ำๆ', advice: 'ประคบเย็นบริเวณที่ฉีด รับประทานยาลดไข้' };
+  if (vaccineName.includes('HPV')) return { se: 'ปวด บวม แดงบริเวณที่ฉีด อาจมีอาการวิงเวียน/หน้ามืด', advice: 'ให้นั่งพัก 15 นาทีหลังฉีด ประคบเย็นบริเวณที่ฉีด' };
+  if (vaccineName.includes('Tdap') || vaccineName.includes('dT')) return { se: 'ปวด บวม แดงบริเวณที่ฉีด ปวดเมื่อยกล้ามเนื้อ ไข้ต่ำ', advice: 'ประคบเย็นบริเวณที่ฉีด รับประทานยาลดไข้' };
+  return { se: 'อาจมีอาการปวด บวม แดง บริเวณที่ฉีด หรือไข้ต่ำๆ', advice: 'ประคบเย็นบริเวณที่ฉีด รับประทานยาลดไข้เมื่อมีไข้' }; // default
+};
+
+const App = () => {
+  const [activeTab, setActiveTab] = useState('rabies');
+  
+  // --- Common State ---
+  const [patientInfo, setPatientInfo] = useState({
+    hn: '', an: '', fullName: '', 
+    diagnosis: '', allergy: '', doctorName: '', issuerName: '', dayZero: new Date().toISOString().split('T')[0]
+  });
+
+  const [printBoth, setPrintBoth] = useState(false);
+
+  // Load saved data on mount
+  useEffect(() => {
+    const savedDx = localStorage.getItem('quicup_dx') || '';
+    const savedDoctor = localStorage.getItem('quicup_doctor') || '';
+    const savedIssuer = localStorage.getItem('quicup_issuer') || '';
+    setPatientInfo(prev => ({
+      ...prev,
+      diagnosis: savedDx,
+      doctorName: savedDoctor,
+      issuerName: savedIssuer
+    }));
+  }, []);
+
+  const [woundCare, setWoundCare] = useState({
+    include: false,
+    timesPerDay: '1',
+    removeSutureDate: '',
+    woundCheckDate: '',
+    location: 'รพ.สต.ใกล้บ้าน',
+    otherLocation: ''
+  });
+
+  // --- Rabies State ---
+  const [rvHistory, setRvHistory] = useState('none'); 
+  const [erigWeight, setErigWeight] = useState(''); // State สำหรับน้ำหนักคำนวณ ERIG
+
+  // --- Tetanus State ---
+  const [dtHistory, setDtHistory] = useState('unknown'); 
+  const [woundType, setWoundType] = useState('clean'); 
+
+  // --- HBV State ---
+  const [hbvHistory, setHbvHistory] = useState('new'); 
+
+  // --- ATB Calculator State ---
+  const [weight, setWeight] = useState('');
+  const [drugChoice, setDrugChoice] = useState('amox_clav'); 
+  const [atbResult, setAtbResult] = useState(null);
+
+  // --- Pediatric Vaccine State ---
+  const [childYears, setChildYears] = useState('');
+  const [childMonths, setChildMonths] = useState('');
+  const [pediatricResult, setPediatricResult] = useState(null);
+
+  // --- ERIG Calculator Logic ---
+  const calculateErig = (weight) => {
+    const w = parseFloat(weight);
+    if (isNaN(w) || w <= 0) return null;
+    let iu = w * 40; // ERIG 40 IU/kg
+    let isMax = false;
+    if (iu >= 3000) {
+      iu = 3000; // Max dose 3000 IU
+      isMax = true;
+    }
+    const ml = iu / 200; // คำนวณปริมาตรจากความเข้มข้นมาตรฐาน 200 IU/ml
+    return { iu: Math.round(iu), ml: ml.toFixed(1), isMax };
+  };
+  const erigData = calculateErig(erigWeight);
+
+  // --- PDF Download State ---
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  useEffect(() => {
+    const scriptId = 'html2pdf-script';
+    if (!document.getElementById(scriptId)) {
+      const script = document.createElement('script');
+      script.id = scriptId;
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
+
+  const handlePatientChange = (e) => {
+    const { name, value } = e.target;
+    setPatientInfo({...patientInfo, [name]: value});
+    
+    if (name === 'diagnosis') localStorage.setItem('quicup_dx', value);
+    if (name === 'doctorName') localStorage.setItem('quicup_doctor', value);
+    if (name === 'issuerName') localStorage.setItem('quicup_issuer', value);
+  };
+
+  const handleWoundCareChange = (e) => {
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    setWoundCare({...woundCare, [e.target.name]: value});
+  };
+
+  const addDays = (dateString, days) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    date.setDate(date.getDate() + days);
+    return date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
+  const addMonths = (dateString, months) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    date.setMonth(date.getMonth() + months);
+    return date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
+  const generateRVSchedule = () => {
+    const d0 = patientInfo.dayZero;
+    let schedule = [];
+    let instructions = '';
+
+    if (rvHistory === 'none') {
+      instructions = 'ฉีด 0.1 ml เข้าในหนัง (ID) x 2 จุด (แขนซ้ายและขวา)';
+      schedule = [
+        { day: 'Day 0', date: addDays(d0, 0), note: 'ฉีดวันนี้' },
+        { day: 'Day 3', date: addDays(d0, 3), note: '' },
+        { day: 'Day 7', date: addDays(d0, 7), note: '' },
+        { day: 'Day 28', date: addDays(d0, 28), note: '' }
+      ];
+    } else if (rvHistory === 'less6m') {
+      instructions = 'ฉีดกระตุ้น 0.1 ml เข้าในหนัง (ID) x 1 จุด';
+      schedule = [{ day: 'Day 0', date: addDays(d0, 0), note: 'Booster 1 เข็ม' }];
+    } else if (rvHistory === 'more6m') {
+      instructions = 'ฉีดกระตุ้น 0.1 ml เข้าในหนัง (ID) x 1 จุด (ฉีด 2 วัน)';
+      schedule = [
+        { day: 'Day 0', date: addDays(d0, 0), note: 'Booster' },
+        { day: 'Day 3', date: addDays(d0, 3), note: 'Booster' }
+      ];
+    }
+    return { schedule, instructions };
+  };
+
+  const generateDTSchedule = () => {
+    const d0 = patientInfo.dayZero;
+    let schedule = [];
+    let instructions = '';
+
+    if (dtHistory === 'unknown') {
+       instructions = `ฉีด 0.5 ml เข้ากล้ามเนื้อ (IM) ${woundType === 'dirty' ? '+ พิจารณา TIG' : ''}`;
+       schedule = [
+        { day: 'เข็มที่ 1', date: addDays(d0, 0), note: woundType === 'dirty' ? '+ TIG' : '' },
+        { day: 'เข็มที่ 2', date: addMonths(d0, 1), note: '1 เดือน' },
+        { day: 'เข็มที่ 3', date: addMonths(d0, 6), note: '6 เดือน' }
+      ];
+    } else if (dtHistory === 'complete_more10' || (dtHistory === 'complete_more5_less10' && woundType === 'dirty')) {
+      instructions = 'ฉีดกระตุ้น 0.5 ml เข้ากล้ามเนื้อ (IM) x 1 เข็ม';
+      schedule = [{ day: 'กระตุ้น 1 เข็ม', date: addDays(d0, 0), note: 'วันนี้' }];
+    } else {
+       instructions = 'ไม่ต้องฉีดวัคซีนกระตุ้น (ภูมิคุ้มกันยังเพียงพอ)';
+       schedule = [{ day: '-', date: '-', note: 'ไม่ต้องฉีด' }];
+    }
+    return { schedule, instructions };
+  };
+
+  const generateHBVSchedule = () => {
+    const d0 = patientInfo.dayZero;
+    let schedule = [];
+    let instructions = 'ฉีด 1.0 ml (ผู้ใหญ่) หรือ 0.5 ml (เด็ก) เข้ากล้ามเนื้อ (IM) บริเวณต้นแขน (Deltoid)';
+
+    if (hbvHistory === 'new') {
+      schedule = [
+        { day: 'เข็มที่ 1 (0)', date: addDays(d0, 0), note: 'ฉีดวันนี้' },
+        { day: 'เข็มที่ 2 (1 เดือน)', date: addMonths(d0, 1), note: 'ห่างเข็มแรก 1 ด.' },
+        { day: 'เข็มที่ 3 (6 เดือน)', date: addMonths(d0, 6), note: 'ห่างเข็มแรก 6 ด.' }
+      ];
+    } else if (hbvHistory === 'booster') {
+      schedule = [{ day: 'กระตุ้น 1 เข็ม', date: addDays(d0, 0), note: 'ฉีดวันนี้' }];
+    } else if (hbvHistory === 'dose2') {
+      schedule = [
+        { day: 'เข็มที่ 2', date: addDays(d0, 0), note: 'ฉีดวันนี้' },
+        { day: 'เข็มที่ 3', date: addMonths(d0, 5), note: 'ห่างเข็ม 2 อีก 5 ด.' }
+      ];
+    }
+    return { schedule, instructions };
+  };
+
+  const calculateATB = () => {
+    const w = parseFloat(weight);
+    if (isNaN(w) || w <= 0) { setAtbResult(null); return; }
+
+    if (drugChoice === 'amox_clav') {
+      if (w < 40) {
+        const mgPerDose = (w * 40) / 2;
+        setAtbResult({
+          type: 'pediatric', drug: 'Amoxicillin/Clavulanate (228.5 mg/5ml) Dry Syrup',
+          dose: `${((mgPerDose * 5) / 200).toFixed(1)} ml`,
+          frequency: 'กินครั้งละ 1 โดส วันละ 2 ครั้ง (เช้า-เย็น) หลังอาหาร', duration: 'ระยะเวลา 5 - 7 วัน',
+          calcNote: `คำนวณจาก Amoxicillin 40 mg/kg/day = ${mgPerDose.toFixed(0)} mg / dose`
+        });
+      } else {
+        setAtbResult({
+          type: 'adult', drug: 'Amoxicillin/Clavulanate (875/125 mg) Tablet',
+          dose: '1 เม็ด',
+          frequency: 'กินครั้งละ 1 เม็ด วันละ 2 ครั้ง (เช้า-เย็น) หลังอาหาร', duration: 'ระยะเวลา 5 - 7 วัน',
+          calcNote: 'ผู้ใหญ่/น้ำหนัก > 40 kg ใช้ขนาดยามาตรฐาน (875/125 mg BID)'
+        });
+      }
+    } else if (drugChoice === 'amox') {
+      if (w < 40) {
+        const mgPerDose = (w * 50) / 3; 
+        setAtbResult({
+          type: 'pediatric', drug: 'Amoxicillin (250 mg/5ml) Suspension \n*ระวังเชื้อดื้อยาในแผลสัตว์กัด*',
+          dose: `${((mgPerDose * 5) / 250).toFixed(1)} ml`,
+          frequency: 'กินครั้งละ 1 โดส วันละ 3 ครั้ง (เช้า-กลางวัน-เย็น) หลังอาหาร', duration: 'ระยะเวลา 5 - 7 วัน',
+          calcNote: `คำนวณจาก 50 mg/kg/day = ${mgPerDose.toFixed(0)} mg / dose`
+        });
+      } else {
+         setAtbResult({
+          type: 'adult', drug: 'Amoxicillin (500 mg) Capsule \n*ระวังเชื้อดื้อยาในแผลสัตว์กัด*',
+          dose: '1 แคปซูล', frequency: 'กินครั้งละ 1 แคปซูล วันละ 3 ครั้ง หลังอาหาร', duration: 'ระยะเวลา 5 - 7 วัน',
+          calcNote: 'ผู้ใหญ่ใช้ขนาดยามาตรฐาน (500 mg TID)'
+        });
+      }
+    } else if (drugChoice === 'doxy') {
+       if (w < 45) {
+        setAtbResult({ type: 'pediatric', drug: 'Doxycycline', dose: 'ไม่แนะนำ', frequency: 'หลีกเลี่ยงการใช้ในเด็กอายุ < 8 ปี', duration: '-', calcNote: 'โปรดพิจารณายาตัวอื่นแทน' });
+      } else {
+        setAtbResult({ type: 'adult', drug: 'Doxycycline (100 mg) Capsule', dose: '1 แคปซูล', frequency: 'กินวันละ 2 ครั้ง หลังอาหารทันที', duration: 'ระยะเวลา 5 - 7 วัน', calcNote: 'มาตรฐาน (100 mg BID)' });
+      }
+    }
+  };
+
+  const pediatricScheduleData = [
+    { maxMonths: 1, label: 'แรกเกิด (Newborn)', vaccines: ['BCG (วัณโรค)', 'HBV 1 (ไวรัสตับอักเสบบี)'], desc: 'รับทันทีที่โรงพยาบาลแรกคลอด' },
+    { maxMonths: 3, label: '2 เดือน', vaccines: ['DTP-HB-Hib 1 (คอตีบ บาดทะยัก ไอกรน ตับอักเสบบี ฮิบ)', 'OPV 1 (โปลิโอแบบหยอด)', 'Rota 1 (ไวรัสโรต้า)'], desc: 'วัคซีนรวม 5 โรคพื้นฐาน และหยอดโรต้าป้องกันท้องร่วง' },
+    { maxMonths: 5, label: '4 เดือน', vaccines: ['DTP-HB-Hib 2', 'OPV 2', 'IPV (โปลิโอแบบฉีด)', 'Rota 2'], desc: 'มีเพิ่มโปลิโอแบบฉีด (IPV) เพื่อเสริมภูมิคุ้มกัน' },
+    { maxMonths: 8, label: '6 เดือน', vaccines: ['DTP-HB-Hib 3', 'OPV 3', 'Rota 3 (ถ้าเป็นชนิด 3 โดส)'], desc: 'เข็มสุดท้ายของชุดวัคซีนพื้นฐานขวบปีแรก' },
+    { maxMonths: 11, label: '9 เดือน', vaccines: ['MMR 1 (หัด หัดเยอรมัน คางทูม)', 'LAJE 1 (ไข้สมองอักเสบเจอี)'], desc: 'เริ่มวัคซีนเชื้อเป็นอ่อนฤทธิ์ (Live Attenuated)' },
+    { maxMonths: 17, label: '1 ปี - 1 ปี 3 เดือน', vaccines: ['VZV 1 (อีสุกอีใส - ทางเลือก)', 'HepA 1 (ตับอักเสบเอ - ทางเลือก)'], desc: 'วัคซีนเสริมที่แนะนำโดยสมาคมโรคติดเชื้อเด็กฯ' },
+    { maxMonths: 23, label: '1 ปีครึ่ง (18 เดือน)', vaccines: ['DTP 4 (คอตีบ บาดทะยัก ไอกรน)', 'OPV 4', 'MMR 2'], desc: 'วัคซีนกระตุ้น DTP และกระตุ้นหัด (MMR2)' },
+    { maxMonths: 47, label: '2 ปีครึ่ง', vaccines: ['LAJE 2 (ไข้สมองอักเสบเจอี เข็ม 2)'], desc: 'กระตุ้นเจอีเข็มสุดท้าย' },
+    { maxMonths: 83, label: '4 - 6 ปี', vaccines: ['DTP 5', 'OPV 5'], desc: 'กระตุ้นก่อนเข้าโรงเรียนประถม' },
+    { maxMonths: 155, label: '11 - 12 ปี', vaccines: ['HPV (มะเร็งปากมดลูก)', 'Tdap หรือ dT (คอตีบ บาดทะยัก ไอกรน ผู้ใหญ่)'], desc: 'วัคซีนวัยรุ่น ฉีด HPV 2 เข็มห่างกัน 6 เดือน' },
+  ];
+
+  const calculatePediatricVaccine = () => {
+    const y = parseInt(childYears || 0);
+    const m = parseInt(childMonths || 0);
+    const totalMonths = (y * 12) + m;
+
+    if (totalMonths < 0 || (y === 0 && m === 0 && childYears === '' && childMonths === '')) {
+      setPediatricResult(null); return;
+    }
+
+    const nextMilestone = pediatricScheduleData.find(item => totalMonths <= item.maxMonths) || pediatricScheduleData[pediatricScheduleData.length - 1];
+    setPediatricResult(nextMilestone);
+  };
+
+  const handlePrint = () => {
+    if (!window.html2pdf) {
+      alert('ระบบกำลังโหลดเครื่องมือสร้าง PDF กรุณารอสักครู่ แล้วกดอีกครั้งครับ');
+      return;
+    }
+    
+    setIsDownloading(true);
+    window.scrollTo(0, 0);
+    
+    setTimeout(() => {
+      const element = document.getElementById('print-area-container');
+      const filenameLabel = activeTab === 'hbv' ? 'HBV' : (printBoth ? 'Rabies_and_Tetanus' : activeTab);
+      const opt = {
+        margin:       0,
+        filename:     `ใบนัด_${filenameLabel}_${patientInfo.fullName || 'ผู้ป่วย'}.pdf`,
+        image:        { type: 'jpeg', quality: 1 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0 },
+        jsPDF:        { unit: 'mm', format: 'a5', orientation: 'landscape' },
+        pagebreak:    { mode: 'css', avoid: 'tr' }
+      };
+
+      window.html2pdf().set(opt).from(element).save().then(() => {
+        setIsDownloading(false);
+      }).catch(err => {
+        console.error('PDF Error:', err);
+        alert('เกิดข้อผิดพลาดในการดาวน์โหลด PDF');
+        setIsDownloading(false);
+      });
+    }, 1500); 
+  };
+
+  const renderPrintPage = (type) => {
+    const isRabies = type === 'rabies';
+    const isHBV = type === 'hbv';
+    
+    let scheduleData;
+    let title = '';
+    
+    if (isHBV) {
+      scheduleData = generateHBVSchedule();
+      title = 'ไวรัสตับอักเสบบี (HBV)';
+    } else if (isRabies) {
+      scheduleData = generateRVSchedule();
+      title = 'พิษสุนัขบ้า (Rabies - Speeda)';
+    } else {
+      scheduleData = generateDTSchedule();
+      title = 'บาดทะยัก (Tetanus - dT)';
+    }
+    
+    const { schedule, instructions } = scheduleData;
+    
+    return (
+      <div 
+        className="print-page relative flex flex-row bg-white text-black p-4 font-sarabun" 
+        style={{ width: '210mm', height: '148mm', boxSizing: 'border-box', overflow: 'hidden' }}
+      >
+        <div className={`flex flex-col h-full ${woundCare.include ? 'w-[68%] pr-4 border-r border-dashed border-gray-400' : 'w-full'}`}>
+          
+          <div className="text-center mb-1">
+            <h2 className="text-[18px] font-bold mb-0">โรงพยาบาลคอนสาร</h2>
+            <h1 className="text-[20px] font-bold mb-0">
+              ใบนัดฉีดวัคซีน {title}
+            </h1>
+            <p className="text-[13px] text-gray-700">
+              {isHBV ? '*** กรุณานำใบนัดมาด้วยทุกครั้ง เพื่อความต่อเนื่องของการรับวัคซีน ***' :
+               (isRabies 
+                ? '*** วัคซีนชนิดนี้ มีบริการฉีดเฉพาะที่โรงพยาบาลเท่านั้น กรุณามาตามนัด ***'
+                : '*** วัคซีนชนิดนี้ สามารถนำใบนัดไปฉีดที่สถานพยาบาลใกล้บ้านได้ ***')}
+            </p>
+          </div>
+
+          <div className="border border-black p-2 mb-2 rounded-lg flex flex-row justify-between items-start text-[14px] leading-tight gap-2 shadow-sm">
+            <div className="flex-grow grid grid-cols-2 gap-y-1 gap-x-2">
+              <div className="col-span-2 md:col-span-1 whitespace-nowrap">
+                <span className="font-bold mr-1">ชื่อ-สกุล:</span> {patientInfo.fullName || '...................................................'}
+              </div>
+              <div className="col-span-2 md:col-span-1 whitespace-nowrap">
+                <span className="font-bold mr-1">HN:</span> {patientInfo.hn || '...............................'}
+              </div>
+              <div className="col-span-2 md:col-span-1 whitespace-nowrap">
+                <span className="font-bold mr-1">วินิจฉัย (Dx):</span> {patientInfo.diagnosis || '...................................................'}
+              </div>
+              <div className="col-span-2 md:col-span-1 whitespace-nowrap text-red-600">
+                <span className="font-bold text-black mr-1">ประวัติแพ้ยา:</span> {patientInfo.allergy || '-'}
+              </div>
+              <div className="col-span-2 md:col-span-1 whitespace-nowrap">
+                <span className="font-bold mr-1">แพทย์ผู้ตรวจ:</span> {patientInfo.doctorName || '...................................................'}
+              </div>
+              <div className="col-span-2 md:col-span-1 whitespace-nowrap">
+                <span className="font-bold mr-1">ผู้ออกใบนัด:</span> {patientInfo.issuerName || '...............................'}
+              </div>
+            </div>
+            <div className="flex-shrink-0 w-20 h-14 border border-dashed border-gray-400 flex items-center justify-center text-gray-400 text-[11px] text-center bg-gray-50 rounded">
+              ติดสติ๊กเกอร์<br/>(HN/AN)
+            </div>
+          </div>
+
+          <div className="text-[14px] font-bold text-blue-800 bg-blue-50 px-2 py-1 mb-1 rounded border border-blue-200">
+            วิธีฉีด: {instructions}
+          </div>
+
+          <div className="flex-grow">
+             <table className="w-full border-collapse border border-black text-[14px] text-center">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border border-black py-1 px-1">เข็มที่ / นัดหมาย</th>
+                  <th className="border border-black py-1 px-1">วันที่นัดตาม {isHBV ? 'แพทย์สั่ง' : 'GPG'}</th>
+                  <th className="border border-black py-1 px-1">วันที่ฉีดจริง</th>
+                  <th className="border border-black py-1 px-1">เวลา</th>
+                  <th className="border border-black py-1 px-1 w-1/4">ผู้ฉีด/ลงชื่อ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {schedule.map((item, index) => (
+                  <tr key={index} className="h-7">
+                    <td className="border border-black px-1 font-bold leading-tight">{item.day} {item.note && <span className="text-[11px] font-normal block">{item.note}</span>}</td>
+                    <td className="border border-black px-1">{item.date}</td>
+                    <td className="border border-black px-1"></td>
+                    <td className="border border-black px-1"></td>
+                    <td className="border border-black px-1"></td>
+                  </tr>
+                ))}
+                {Array.from({ length: Math.max(0, 4 - schedule.length) }).map((_, i) => (
+                   <tr key={`empty-${i}`} className="h-7">
+                    <td className="border border-black px-1"></td><td className="border border-black px-1"></td><td className="border border-black px-1"></td><td className="border border-black px-1"></td><td className="border border-black px-1"></td>
+                  </tr>
+                ))}
+              </tbody>
+             </table>
+          </div>
+
+          <div className="mt-2 text-[13px] bg-gray-50 p-1.5 rounded border border-gray-300 leading-snug">
+            <p className="font-bold mb-0.5">คำแนะนำ:</p>
+            <ul className="list-disc pl-5 space-y-0">
+              <li>กรุณานำใบนัดและสมุดประจำตัวผู้ป่วยมาด้วยทุกครั้ง</li>
+              <li>หากมีไข้สูง ปวดบวมแดงบริเวณที่ฉีดมาก หายใจเหนื่อยหอบ ให้รีบมาพบแพทย์</li>
+              {isRabies && <li>ห้ามดื่มเครื่องดื่มแอลกอฮอล์ระหว่างรับวัคซีนพิษสุนัขบ้า</li>}
+            </ul>
+          </div>
+        </div>
+
+        {woundCare.include && (
+          <div className="w-[32%] pl-4 flex flex-col h-full bg-orange-50/40">
+            <h2 className="text-[18px] font-bold text-center mb-2 border-b-2 border-black pb-1">
+              ใบนัดทำแผล
+            </h2>
+            <div className="flex-grow space-y-2 text-[14px] leading-snug">
+              <div className="bg-white p-2 border border-black rounded shadow-sm">
+                <p><span className="font-bold">นัดทำแผลวันละ:</span> {woundCare.timesPerDay} ครั้ง</p>
+                <p className="mt-0.5"><span className="font-bold">สถานที่ทำแผล:</span><br/> {woundCare.location === 'other' ? woundCare.otherLocation : woundCare.location}</p>
+              </div>
+              <div className="bg-white p-2 border border-black rounded shadow-sm">
+                 <p><span className="font-bold">วันที่นัดตัดไหม:</span><br/> {woundCare.removeSutureDate ? formatDate(woundCare.removeSutureDate) : 'ไม่ระบุ / ไม่มีเย็บแผล'}</p>
+              </div>
+              <div className="bg-white p-2 border border-black rounded shadow-sm">
+                 <p><span className="font-bold">นัดดูแผล (พบแพทย์):</span><br/> {woundCare.woundCheckDate ? formatDate(woundCare.woundCheckDate) : 'ไม่ระบุ'}</p>
+              </div>
+            </div>
+            <div className="mt-2 text-[12px] p-2 border border-gray-300 rounded bg-white shadow-sm">
+              <p className="font-bold mb-1">การดูแลแผลเบื้องต้น:</p>
+              <ul className="list-disc pl-4 space-y-1 leading-tight">
+                <li>ระวังอย่าให้แผลโดนน้ำ จนกว่าจะตัดไหม</li>
+                <li>หากแผลซึม มีเลือดออกมาก ให้เปลี่ยนผ้าก๊อซและรีบมาสถานพยาบาล</li>
+                <li><strong>สังเกตอาการผิดปกติ:</strong> หากแผลบวมแดง ร้อน มีหนอง หรือมีไข้สูง ให้รีบมาพบแพทย์ทันที</li>
+              </ul>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const pagesToPrint = activeTab === 'hbv' ? ['hbv'] : (printBoth ? ['rabies', 'tetanus'] : [activeTab]);
+  
+  const rvData = generateRVSchedule();
+  const dtData = generateDTSchedule();
+  const hbvData = generateHBVSchedule();
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-cyan-100 via-blue-100 to-purple-100 font-sans text-gray-800 flex flex-col print:bg-white print:m-0 relative">
+      
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap');
+          
+          body, .font-sans { font-family: 'Plus Jakarta Sans', 'Noto Sans Thai', sans-serif !important; }
+          .font-sarabun { font-family: 'Sarabun', sans-serif !important; }
+
+          @media print {
+            @page { size: A5 landscape; margin: 0; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .no-print { display: none !important; }
+            .print-only { display: flex !important; }
+            .glass-panel { background: white !important; border: none !important; box-shadow: none !important; backdrop-filter: none !important; }
+          }
+          .html2pdf__page-break { page-break-after: always; height: 0; border: none; }
+
+          .glass-panel {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+          }
+          .glass-input {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+          }
+          .glass-input:focus {
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+            outline: none;
+          }
+        `}
+      </style>
+
+      {isDownloading && (
+        <div className="fixed inset-0 z-[9999] bg-black/80 flex flex-col items-center justify-center text-white backdrop-blur-sm">
+          <div className="animate-spin rounded-full h-20 w-20 border-t-4 border-b-4 border-blue-400 mb-6"></div>
+          <h2 className="text-3xl font-bold mb-2">กำลังสร้างไฟล์ PDF...</h2>
+          <p className="text-blue-200 text-lg">กรุณารอสักครู่ ระบบกำลังประมวลผลและดาวน์โหลดลงเครื่องของคุณ</p>
+        </div>
+      )}
+
+      <div className={`${isDownloading ? 'hidden' : 'flex flex-col flex-grow'}`}>
+        <header className="no-print glass-panel sticky top-0 z-50 px-4 py-3 flex justify-between items-center shadow-sm">
+          <div className="flex items-center gap-2 text-blue-700">
+            <Dog className="w-8 h-8" />
+            <h1 className="text-2xl font-black tracking-tight">QUIC <span className="text-purple-600 font-light">up</span> KHONSAN</h1>
+          </div>
+          <div className="text-sm font-medium text-gray-500 bg-white/50 px-3 py-1 rounded-full">
+            by BHOOVANAI studios
+          </div>
+        </header>
+
+        <main className="no-print flex-grow p-4 md:p-6 lg:p-8 flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto w-full">
+          
+          {/* Sidebar */}
+          <div className="w-full lg:w-1/4 flex flex-col gap-3">
+            <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 ml-2">ใบนัดผู้ป่วย (Appointments)</div>
+            <button 
+              onClick={() => setActiveTab('rabies')}
+              className={`flex items-center gap-3 p-4 rounded-2xl font-semibold transition-all shadow-sm ${activeTab === 'rabies' ? 'bg-blue-600 text-white shadow-md transform scale-105' : 'glass-panel text-gray-600 hover:bg-white/60'}`}
+            >
+              <Syringe className="w-6 h-6" /> ใบนัด Rabies & CPG & ATB
+            </button>
+            <button 
+              onClick={() => setActiveTab('tetanus')}
+              className={`flex items-center gap-3 p-4 rounded-2xl font-semibold transition-all shadow-sm ${activeTab === 'tetanus' ? 'bg-teal-600 text-white shadow-md transform scale-105' : 'glass-panel text-gray-600 hover:bg-white/60'}`}
+            >
+              <AlertCircle className="w-6 h-6" /> ใบนัด Tetanus (dT)
+            </button>
+            <button 
+              onClick={() => setActiveTab('hbv')}
+              className={`flex items-center gap-3 p-4 rounded-2xl font-semibold transition-all shadow-sm ${activeTab === 'hbv' ? 'bg-indigo-600 text-white shadow-md transform scale-105' : 'glass-panel text-gray-600 hover:bg-white/60'}`}
+            >
+              <Activity className="w-6 h-6" /> ใบนัด ไวรัสตับอักเสบบี (HBV)
+            </button>
+
+            <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mt-4 mb-1 ml-2">เครื่องมือแพทย์ (Tools)</div>
+            <button 
+              onClick={() => setActiveTab('pediatric')}
+              className={`flex items-center gap-3 p-4 rounded-2xl font-semibold transition-all shadow-sm ${activeTab === 'pediatric' ? 'bg-pink-500 text-white shadow-md transform scale-105' : 'glass-panel text-gray-600 hover:bg-white/60'}`}
+            >
+              <Baby className="w-6 h-6" /> ตารางวัคซีนเด็ก (PIDST)
+            </button>
+          </div>
+
+        {/* Content Area */}
+        <div className="w-full lg:w-3/4 flex flex-col gap-6">
+          
+          <div className="glass-panel p-6 rounded-3xl shadow-lg relative">
+            
+            {/* VACCINE APPOINTMENTS TAB (Rabies, Tetanus, HBV) */}
+            {(activeTab === 'rabies' || activeTab === 'tetanus' || activeTab === 'hbv') && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-bold text-gray-800 border-b border-gray-300 pb-2 flex items-center gap-2">
+                  <User className="w-5 h-5 text-blue-500" /> ข้อมูลผู้ป่วยพื้นฐาน
+                </h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">HN / AN</label>
+                    <input type="text" name="hn" value={patientInfo.hn} onChange={handlePatientChange} placeholder="ปล่อยว่างเพื่อแปะสติ๊กเกอร์" className="glass-input w-full p-2 rounded-xl" />
+                  </div>
+                  <div className="lg:col-span-2">
+                    <label className="block text-sm font-medium text-gray-600 mb-1">ชื่อ - นามสกุล</label>
+                    <input type="text" name="fullName" value={patientInfo.fullName} onChange={handlePatientChange} placeholder="เว้นว่างไว้เพื่อติดสติ๊กเกอร์ได้" className="glass-input w-full p-2 rounded-xl" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">การวินิจฉัย (Dx)</label>
+                    <input type="text" name="diagnosis" value={patientInfo.diagnosis} onChange={handlePatientChange} className="glass-input w-full p-2 rounded-xl" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1 text-red-500">ประวัติแพ้ยา</label>
+                    <input type="text" name="allergy" value={patientInfo.allergy} onChange={handlePatientChange} placeholder="ถ้าไม่มีให้เว้นว่างไว้" className="glass-input w-full p-2 rounded-xl border-red-200" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">ชื่อแพทย์ผู้ตรวจ</label>
+                    <input type="text" name="doctorName" value={patientInfo.doctorName} onChange={handlePatientChange} className="glass-input w-full p-2 rounded-xl" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">ผู้ออกใบนัด</label>
+                    <input type="text" name="issuerName" value={patientInfo.issuerName} onChange={handlePatientChange} className="glass-input w-full p-2 rounded-xl" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">วันที่รับเข็มแรก (Day 0)</label>
+                    <input type="date" name="dayZero" value={patientInfo.dayZero} onChange={handlePatientChange} className="glass-input w-full p-2 rounded-xl" />
+                  </div>
+                </div>
+
+                <hr className="border-gray-300 border-dashed" />
+
+                {/* --- RABIES SECTION --- */}
+                {activeTab === 'rabies' && (
+                  <div className="space-y-4 bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
+                    <h3 className="font-bold text-blue-800">เงื่อนไขการรับวัคซีน Rabies (Speeda)</h3>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">ประวัติการรับวัคซีนพิษสุนัขบ้า</label>
+                      <select value={rvHistory} onChange={(e) => setRvHistory(e.target.value)} className="glass-input w-full p-2 rounded-xl">
+                        <option value="none">ไม่เคยรับ หรือ รับไม่ครบ</option>
+                        <option value="less6m">เคยรับครบ ภายใน 6 เดือนที่ผ่านมา</option>
+                        <option value="more6m">เคยรับครบ เกิน 6 เดือนที่ผ่านมา</option>
+                      </select>
+                    </div>
+
+                    <div className="mt-4 p-4 bg-white/70 rounded-xl shadow-sm border border-blue-200 animate-fade-in">
+                       <h4 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-1"><CalendarDays className="w-4 h-4"/> สรุปแผนการฉีดวัคซีน (Live Preview)</h4>
+                       <p className="text-[15px] text-blue-700 font-semibold mb-3 bg-blue-50 p-2 rounded inline-block border border-blue-100">
+                         วิธีฉีด: {rvData.instructions}
+                       </p>
+                       <div className="flex flex-wrap gap-2 mb-3">
+                         {rvData.schedule.map((s, i) => (
+                            <div key={i} className="bg-blue-100 px-3 py-1.5 rounded-lg text-sm font-medium text-blue-900 border border-blue-200">
+                              {s.day}: <span className="font-bold">{s.date}</span>
+                            </div>
+                         ))}
+                       </div>
+                       
+                       <div className="bg-blue-50/80 p-3 rounded-xl border border-blue-100 text-[13.5px] text-blue-800 mt-2">
+                         <div className="flex items-center gap-1.5 font-bold mb-1.5 text-blue-900">
+                           <ShieldCheck className="w-4 h-4 text-green-600"/> การคุ้มกันและการปฏิบัติตัวในอนาคต
+                         </div>
+                         <ul className="list-disc pl-5 space-y-0.5 text-blue-800/90 leading-relaxed">
+                           <li>เมื่อรับวัคซีนครบชุด ร่างกายจะมีภูมิคุ้มกันความจำไปตลอดชีวิต</li>
+                           <li><span className="font-semibold text-blue-900">หากถูกกัด/ข่วนซ้ำ:</span> <span className="text-red-600 font-medium">ไม่ต้องฉีดเซรุ่ม (RIG) อีกต่อไป</span></li>
+                           <li>โดนกัดซ้ำ <strong>ภายใน 6 เดือน</strong>: ฉีดวัคซีนกระตุ้นเพียง 1 เข็ม (Day 0)</li>
+                           <li>โดนกัดซ้ำ <strong>เกิน 6 เดือน</strong>: ฉีดวัคซีนกระตุ้น 2 เข็ม (Day 0 และ Day 3)</li>
+                         </ul>
+                       </div>
+                    </div>
+
+                    {/* ERIG Calculator Box */}
+                    <div className="mt-4 p-4 bg-red-50/70 rounded-xl shadow-sm border border-red-100 animate-fade-in">
+                       <h4 className="text-sm font-bold text-red-800 mb-3 flex items-center gap-1">
+                         <Droplet className="w-4 h-4 text-red-600"/> คำนวณเซรุ่ม ERIG (Equine Rabies Immunoglobulin)
+                       </h4>
+                       <div className="flex flex-col sm:flex-row gap-3 items-center">
+                         <div className="w-full sm:w-1/3">
+                           <input 
+                             type="number" 
+                             value={erigWeight} 
+                             onChange={(e) => setErigWeight(e.target.value)} 
+                             placeholder="น้ำหนัก (กก.)" 
+                             className="glass-input w-full p-2.5 rounded-xl text-center font-bold text-red-900 border-red-200 focus:ring-red-400"
+                           />
+                         </div>
+                         <div className="w-full sm:w-2/3">
+                           {erigData ? (
+                             <div className="bg-white px-4 py-2 rounded-xl border border-red-200 shadow-sm flex items-center justify-between">
+                               <div>
+                                 <div className="text-[11px] text-gray-500 font-medium mb-0.5">ปริมาณที่ต้องใช้ (Dose)</div>
+                                 <div className="font-black text-red-700 text-lg leading-none">
+                                   {erigData.iu} <span className="text-xs font-semibold text-red-500">IU</span> 
+                                   <span className="text-gray-300 mx-2">|</span> 
+                                   {erigData.ml} <span className="text-xs font-semibold text-red-500">ml</span>
+                                 </div>
+                               </div>
+                               {erigData.isMax && <span className="bg-red-100 text-red-700 text-[10px] px-2 py-1 rounded-lg font-bold border border-red-200">Max Dose 3000 IU</span>}
+                             </div>
+                           ) : (
+                             <div className="text-sm text-red-400/70 italic text-center sm:text-left px-2">กรอกน้ำหนักเพื่อคำนวณ Dose</div>
+                           )}
+                         </div>
+                       </div>
+                       <div className="mt-3 text-[11px] text-red-600/90 leading-tight bg-white/50 p-2 rounded-lg border border-red-50">
+                         <span className="font-bold">Note:</span> ERIG 40 IU/kg (ปริมาตร ml คำนวณจากความเข้มข้น 200 IU/ml) <br/>
+                         ให้ฉีดรอบแผลให้มากที่สุดเท่าที่จะทำได้ หากมีเหลือให้ฉีดเข้ากล้ามเนื้อ (IM)
+                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* --- TETANUS SECTION --- */}
+                {activeTab === 'tetanus' && (
+                  <div className="space-y-4 bg-teal-50/50 p-4 rounded-2xl border border-teal-100">
+                    <h3 className="font-bold text-teal-800">เงื่อนไขการรับวัคซีน บาดทะยัก (dT)</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">ประวัติการรับวัคซีนบาดทะยัก</label>
+                        <select value={dtHistory} onChange={(e) => setDtHistory(e.target.value)} className="glass-input w-full p-2 rounded-xl">
+                          <option value="unknown">ไม่เคย / จำไม่ได้ / รับไม่ครบ 3 เข็ม</option>
+                          <option value="complete_less5">รับครบ 3 เข็ม (เข็มสุดท้ายไม่เกิน 5 ปี)</option>
+                          <option value="complete_more5_less10">รับครบ 3 เข็ม (เข็มสุดท้าย 5-10 ปี)</option>
+                          <option value="complete_more10">รับครบ 3 เข็ม (เข็มสุดท้ายเกิน 10 ปี)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">ลักษณะแผล</label>
+                        <select value={woundType} onChange={(e) => setWoundType(e.target.value)} className="glass-input w-full p-2 rounded-xl">
+                          <option value="clean">แผลสะอาด (Clean wound)</option>
+                          <option value="dirty">แผลสกปรก (Dirty wound/Bite/Puncture)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 p-4 bg-white/70 rounded-xl shadow-sm border border-teal-200 animate-fade-in">
+                       <h4 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-1"><CalendarDays className="w-4 h-4"/> สรุปแผนการฉีดวัคซีน (Live Preview)</h4>
+                       <p className="text-[15px] text-teal-700 font-semibold mb-3 bg-teal-50 p-2 rounded inline-block border border-teal-100">
+                         วิธีฉีด: {dtData.instructions}
+                       </p>
+                       <div className="flex flex-wrap gap-2 mb-3">
+                         {dtData.schedule.map((s, i) => (
+                            <div key={i} className="bg-teal-100 px-3 py-1.5 rounded-lg text-sm font-medium text-teal-900 border border-teal-200">
+                              {s.day}: <span className="font-bold">{s.date}</span> {s.note && <span className="text-xs text-teal-700 ml-1">({s.note})</span>}
+                            </div>
+                         ))}
+                       </div>
+
+                       <div className="bg-teal-50/80 p-3 rounded-xl border border-teal-100 text-[13.5px] text-teal-900 mt-2">
+                         <div className="flex items-center gap-1.5 font-bold mb-1.5">
+                           <ShieldCheck className="w-4 h-4 text-green-600"/> การคุ้มกันและการปฏิบัติตัวในอนาคต
+                         </div>
+                         <ul className="list-disc pl-5 space-y-0.5 text-teal-800/90 leading-relaxed">
+                           <li>เมื่อรับวัคซีนบาดทะยักครบ 3 เข็มพื้นฐาน ร่างกายจะมีภูมิคุ้มกันอยู่ได้นานถึง <strong>10 ปี</strong></li>
+                           <li><span className="font-semibold text-teal-950">หากเกิดบาดแผลในอนาคต:</span></li>
+                           <li><strong>แผลสะอาด:</strong> ไม่ต้องฉีดกระตุ้น (ยกเว้นเข็มสุดท้ายเกิน 10 ปี ให้กระตุ้น 1 เข็ม)</li>
+                           <li><strong>แผลสกปรก (ตะปูตำ/สัตว์กัด):</strong> ให้ฉีดกระตุ้น 1 เข็ม <span className="text-red-600 font-medium">หากเข็มสุดท้ายเกิน 5 ปี</span></li>
+                         </ul>
+                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* --- HBV SECTION --- */}
+                {activeTab === 'hbv' && (
+                  <div className="space-y-4 bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100">
+                    <h3 className="font-bold text-indigo-800">เงื่อนไขการรับวัคซีน ไวรัสตับอักเสบบี (HBV)</h3>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">ประวัติการรับวัคซีน HBV</label>
+                      <select value={hbvHistory} onChange={(e) => setHbvHistory(e.target.value)} className="glass-input w-full p-2 rounded-xl">
+                        <option value="new">เริ่มฉีดชุดใหม่ (3 เข็ม: 0, 1, 6 เดือน)</option>
+                        <option value="dose2">เคยฉีดเข็ม 1 แล้ว (มารับเข็ม 2 หรือ 3)</option>
+                        <option value="booster">ฉีดกระตุ้น (Booster) 1 เข็ม</option>
+                      </select>
+                    </div>
+
+                    <div className="mt-4 p-4 bg-white/70 rounded-xl shadow-sm border border-indigo-200 animate-fade-in">
+                       <h4 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-1"><CalendarDays className="w-4 h-4"/> สรุปแผนการฉีดวัคซีน (Live Preview)</h4>
+                       <p className="text-[15px] text-indigo-700 font-semibold mb-3 bg-indigo-50 p-2 rounded inline-block border border-indigo-100">
+                         วิธีฉีด: {hbvData.instructions}
+                       </p>
+                       <div className="flex flex-wrap gap-2 mb-3">
+                         {hbvData.schedule.map((s, i) => (
+                            <div key={i} className="bg-indigo-100 px-3 py-1.5 rounded-lg text-sm font-medium text-indigo-900 border border-indigo-200">
+                              {s.day}: <span className="font-bold">{s.date}</span> {s.note && <span className="text-xs text-indigo-700 ml-1">({s.note})</span>}
+                            </div>
+                         ))}
+                       </div>
+
+                       <div className="bg-indigo-50/80 p-3 rounded-xl border border-indigo-100 text-[13.5px] text-indigo-900 mt-2">
+                         <div className="flex items-center gap-1.5 font-bold mb-1.5">
+                           <HeartPulse className="w-4 h-4 text-red-500"/> คำแนะนำการรับวัคซีนตับอักเสบบี
+                         </div>
+                         <ul className="list-disc pl-5 space-y-0.5 text-indigo-900/90 leading-relaxed">
+                           <li>ควรตรวจเลือดหาเชื้อ (HBsAg) และภูมิคุ้มกัน (Anti-HBs) ก่อนเริ่มฉีดวัคซีน หากมีภูมิแล้ว ไม่ต้องฉีด</li>
+                           <li>หากฉีดไม่ครบตามนัด (ขาดการติดต่อไปนาน) <strong>ไม่จำเป็นต้องเริ่มฉีดใหม่ตั้งแต่ต้น</strong> ให้ฉีดเข็มที่เหลือต่อไปได้เลย</li>
+                           <li>หลังฉีดครบ 3 เข็ม (ประมาณ 1-2 เดือน) แนะนำให้เจาะเลือดตรวจระดับภูมิคุ้มกัน (Anti-HBs) อีกครั้ง</li>
+                         </ul>
+                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Additional Appointment Options (Only for Rabies/Tetanus) */}
+                {(activeTab === 'rabies' || activeTab === 'tetanus') && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-orange-50/50 p-4 rounded-2xl border border-orange-100 flex-grow">
+                      <label className="flex items-center gap-2 cursor-pointer font-bold text-orange-800">
+                        <input type="checkbox" name="include" checked={woundCare.include} onChange={handleWoundCareChange} className="w-5 h-5 rounded text-orange-500 focus:ring-orange-400" />
+                        <Bandage className="w-5 h-5" /> ออกใบนัดทำแผลพร้อมกัน
+                      </label>
+                      
+                      {woundCare.include && (
+                        <div className="grid grid-cols-1 gap-4 mt-4 animate-fade-in">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-600 mb-1">ทำแผลวันละ (ครั้ง)</label>
+                            <select name="timesPerDay" value={woundCare.timesPerDay} onChange={handleWoundCareChange} className="glass-input w-full p-2 rounded-xl">
+                              <option value="1">1 ครั้ง</option>
+                              <option value="2">2 ครั้ง</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-600 mb-1">สถานที่นัดทำแผล</label>
+                            <select name="location" value={woundCare.location} onChange={handleWoundCareChange} className="glass-input w-full p-2 rounded-xl">
+                              <option value="รพ.สต.ใกล้บ้าน">รพ.สต. ใกล้บ้าน</option>
+                              <option value="สถานพยาบาลใกล้บ้าน">สถานพยาบาลใกล้บ้าน</option>
+                              <option value="โรงพยาบาล">โรงพยาบาลนี้</option>
+                              <option value="other">อื่นๆ (ระบุเอง)</option>
+                            </select>
+                            {woundCare.location === 'other' && (
+                              <input type="text" name="otherLocation" value={woundCare.otherLocation} onChange={handleWoundCareChange} placeholder="ระบุสถานที่..." className="glass-input w-full p-2 rounded-xl mt-2" />
+                            )}
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-600 mb-1">ตัดไหม (ถ้ามี)</label>
+                              <input type="date" name="removeSutureDate" value={woundCare.removeSutureDate} onChange={handleWoundCareChange} className="glass-input w-full p-2 rounded-xl" />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-600 mb-1">พบแพทย์</label>
+                              <input type="date" name="woundCheckDate" value={woundCare.woundCheckDate} onChange={handleWoundCareChange} className="glass-input w-full p-2 rounded-xl" />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-200 flex-grow h-fit">
+                       <label className="flex items-start gap-2 cursor-pointer font-bold text-blue-800">
+                        <input type="checkbox" checked={printBoth} onChange={(e) => setPrintBoth(e.target.checked)} className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 mt-1" />
+                        <div>
+                          <span className="flex items-center gap-1"><CopyPlus className="w-5 h-5" /> พิมพ์ใบนัด Rabies + Tetanus พร้อมกัน</span>
+                          <p className="text-xs text-blue-600/70 font-normal mt-1 leading-tight">ระบบจะสร้าง PDF จำนวน 2 หน้า เป็นใบนัดพิษสุนัขบ้า และใบนัดบาดทะยัก ในไฟล์เดียว</p>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-end pt-4">
+                  <button onClick={handlePrint} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-2xl flex items-center gap-2 shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1">
+                    <Download className="w-5 h-5" /> พิมพ์ใบนัด {activeTab === 'hbv' ? 'HBV' : ''} (ดาวน์โหลด PDF)
+                  </button>
+                </div>
+
+                {/* --- MOVED CPG & ATB Calculator TO THE VERY BOTTOM --- */}
+                {activeTab === 'rabies' && (
+                  <div className="pt-8 mt-6 border-t border-gray-300 animate-fade-in">
+                    <h2 className="text-2xl font-bold text-gray-800 border-b border-gray-300 pb-2 mb-4 flex items-center gap-2">
+                      <BookOpen className="w-6 h-6 text-purple-500" /> Guideline การแบ่ง Category สุนัขกัด
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                      {/* Cat I */}
+                      <div className="bg-gradient-to-b from-green-50 to-green-100/50 p-5 rounded-3xl border border-green-200 shadow-sm flex flex-col items-center text-center">
+                        <div className="relative w-full h-32 bg-white rounded-2xl border-2 border-dashed border-green-300 flex items-center justify-center mb-4 overflow-hidden shadow-inner p-2">
+                          <Dog className="w-16 h-16 text-green-600 absolute left-[20%]" />
+                          <HandHeart className="w-14 h-14 text-green-500 absolute right-[20%] bottom-3" />
+                        </div>
+                        <div className="text-green-800 font-black text-xl mb-2 flex items-center gap-2">
+                          <span className="bg-green-600 text-white px-3 py-1 rounded-xl text-sm shadow-md">Cat I</span> สัมผัสทั่วไป
+                        </div>
+                        <p className="text-sm text-gray-700 mb-4 h-16 flex items-center justify-center">
+                          ถูกสัตว์เลียผิวหนังที่ไม่มีแผล, ให้อาหาร, สัมผัสตัวสัตว์
+                        </p>
+                        <div className="bg-white w-full p-4 rounded-2xl text-sm border-l-4 border-green-500 shadow-sm text-left mt-auto">
+                          <strong className="text-gray-800 block mb-1">การรักษา:</strong>
+                          <span className="text-gray-600">- ล้างด้วยน้ำและสบู่</span><br/>
+                          <span className="text-red-500 font-bold mt-1 inline-block bg-red-50 px-2 py-1 rounded">- ไม่ต้องฉีดวัคซีน (No PEP)</span>
+                        </div>
+                      </div>
+
+                      {/* Cat II */}
+                      <div className="bg-gradient-to-b from-yellow-50 to-yellow-100/50 p-5 rounded-3xl border border-yellow-200 shadow-sm flex flex-col items-center text-center">
+                        <div className="relative w-full h-32 bg-white rounded-2xl border-2 border-dashed border-yellow-300 flex items-center justify-center mb-4 overflow-hidden shadow-inner p-2">
+                           <Hand className="w-16 h-16 text-yellow-600" />
+                           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex gap-1.5 rotate-12">
+                              <div className="w-1 h-10 bg-red-400 rounded-full"></div>
+                              <div className="w-1 h-10 bg-red-400 rounded-full mt-3"></div>
+                              <div className="w-1 h-10 bg-red-400 rounded-full"></div>
+                           </div>
+                        </div>
+                        <div className="text-yellow-800 font-black text-xl mb-2 flex items-center gap-2">
+                          <span className="bg-yellow-500 text-white px-3 py-1 rounded-xl text-sm shadow-md">Cat II</span> มีรอยถลอก
+                        </div>
+                        <p className="text-sm text-gray-700 mb-4 h-16 flex items-center justify-center">
+                          ถูกกัด ข่วน เป็นรอยช้ำ หรือถลอก <span className="underline ml-1 font-semibold text-gray-900">ไม่มีเลือดออก</span>
+                        </p>
+                        <div className="bg-white w-full p-4 rounded-2xl text-sm border-l-4 border-yellow-500 shadow-sm text-left mt-auto">
+                          <strong className="text-gray-800 block mb-1">การรักษา:</strong>
+                          <span className="text-gray-600">- ล้างแผลใส่ยาฆ่าเชื้อ</span><br/>
+                          <span className="text-blue-600 font-bold mt-1 inline-block bg-blue-50 px-2 py-1 rounded">- ฉีดวัคซีน Rabies</span>
+                        </div>
+                      </div>
+
+                      {/* Cat III */}
+                      <div className="bg-gradient-to-b from-red-50 to-red-100/50 p-5 rounded-3xl border border-red-200 shadow-sm flex flex-col items-center text-center">
+                        <div className="relative w-full h-32 bg-white rounded-2xl border-2 border-dashed border-red-300 flex items-center justify-center mb-4 overflow-hidden shadow-inner p-2">
+                          <Hand className="w-16 h-16 text-red-400" />
+                          <div className="absolute top-[45%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                             <div className="w-3.5 h-3.5 bg-red-600 rounded-full"></div>
+                             <Droplet className="w-6 h-6 text-red-600 fill-current mt-0.5 animate-bounce" />
+                          </div>
+                        </div>
+                        <div className="text-red-800 font-black text-xl mb-2 flex items-center gap-2">
+                          <span className="bg-red-600 text-white px-3 py-1 rounded-xl text-sm shadow-md">Cat III</span> แผลลึก เลือดออก
+                        </div>
+                        <p className="text-sm text-gray-700 mb-4 h-16 flex items-center justify-center leading-relaxed">
+                          กัด ข่วน <span className="underline mx-1 font-semibold text-gray-900">มีเลือดออก</span> (แม้เพียงหยดเดียว), น้ำลายโดนเยื่อบุตา/ปาก
+                        </p>
+                        <div className="bg-white w-full p-4 rounded-2xl text-sm border-l-4 border-red-500 shadow-sm text-left mt-auto">
+                          <strong className="text-gray-800 block mb-1">การรักษา:</strong>
+                          <span className="text-gray-600">- ล้างแผลใส่ยาฆ่าเชื้อ</span><br/>
+                          <span className="text-blue-600 font-bold">- ฉีดวัคซีน Rabies</span><br/>
+                          <span className="text-purple-700 font-bold mt-1 inline-block bg-purple-50 px-2 py-1 rounded">- ฉีด RIG (เซรุ่ม) รอบแผล</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-3xl border border-blue-100 shadow-sm">
+                      <h2 className="text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">
+                        <Calculator className="w-6 h-6" /> ATB Dosage Calculator (Dog/Cat Bite)
+                      </h2>
+                      <p className="text-sm text-gray-600 mb-4">
+                        ยา <strong>First-line</strong> สำหรับแผลสัตว์กัดคือ <strong>Amoxicillin/Clavulanate</strong> <br/>(หากแพ้ Penicillin สามารถเลือกระบุยาทางเลือกอื่นที่เหมาะสมได้)
+                      </p>
+                      
+                      <div className="flex flex-col md:flex-row gap-4 items-end mb-6">
+                        <div className="w-full md:w-1/3">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">น้ำหนักผู้ป่วย (kg)</label>
+                          <input 
+                            type="number" 
+                            value={weight} 
+                            onChange={(e) => setWeight(e.target.value)} 
+                            placeholder="กรอกน้ำหนัก" 
+                            className="glass-input w-full p-3 rounded-xl text-lg font-bold text-center"
+                          />
+                        </div>
+                        <div className="w-full md:w-1/2">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">เลือกชนิดยา ATB</label>
+                          <select 
+                            value={drugChoice} 
+                            onChange={(e) => setDrugChoice(e.target.value)} 
+                            className="glass-input w-full p-3 rounded-xl text-md font-bold"
+                          >
+                            <option value="amox_clav">Amoxicillin/Clavulanate (First-line)</option>
+                            <option value="amox">Amoxicillin (ระวังเชื้อดื้อยา)</option>
+                            <option value="clinda">Clindamycin (ต้องใช้คู่กับยาอื่น)</option>
+                            <option value="tmp_smx">TMP-SMX / Bactrim (ทางเลือกเด็กแพ้ PCN)</option>
+                            <option value="doxy">Doxycycline (ทางเลือกผู้ใหญ่แพ้ PCN / แผลแมวกัด)</option>
+                            <option value="azithro">Azithromycin (กรณีหญิงตั้งครรภ์/เด็ก แพ้ PCN)</option>
+                          </select>
+                        </div>
+                        <button 
+                          onClick={calculateATB}
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl w-full md:w-auto transition-colors"
+                        >
+                          คำนวณ Dose
+                        </button>
+                      </div>
+
+                      {atbResult && (
+                        <div className="bg-blue-50 p-5 rounded-2xl shadow-inner border border-blue-200 animate-fade-in">
+                          <h3 className="font-bold text-lg text-gray-800 border-b border-blue-200 pb-2 mb-3 flex items-center justify-between">
+                            Recommendation
+                            <span className={`text-xs px-2 py-1 rounded-full text-white ${atbResult.type === 'pediatric' ? 'bg-orange-400' : 'bg-blue-500'}`}>
+                              {atbResult.type === 'pediatric' ? 'สูตรเด็ก' : 'สูตรผู้ใหญ่'}
+                            </span>
+                          </h3>
+                          <div className="space-y-3">
+                            <div className="flex items-start gap-3">
+                              <Syringe className="w-5 h-5 text-blue-500 mt-0.5" />
+                              <div>
+                                <p className="text-sm text-gray-500">ชื่อยา (Drug)</p>
+                                <p className="font-bold text-blue-900 whitespace-pre-line">{atbResult.drug}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-3">
+                              <Calculator className="w-5 h-5 text-green-500 mt-0.5" />
+                              <div>
+                                <p className="text-sm text-gray-500">ปริมาณ (Dose)</p>
+                                <p className="font-bold text-2xl text-green-700">{atbResult.dose}</p>
+                                <p className="text-sm text-gray-600 bg-white p-2 rounded-lg mt-1 inline-block whitespace-pre-line shadow-sm border border-gray-100">{atbResult.calcNote}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-3">
+                              <CalendarDays className="w-5 h-5 text-orange-500 mt-0.5" />
+                              <div>
+                                <p className="text-sm text-gray-500">วิธีทาน (Frequency & Duration)</p>
+                                <p className="font-semibold text-gray-800 whitespace-pre-line">{atbResult.frequency}</p>
+                                <p className="font-semibold text-gray-800">{atbResult.duration}</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="mt-4 text-xs text-red-500 flex gap-1 items-start bg-red-50 p-2 rounded border border-red-100">
+                            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                            <p>Disclaimer: การคำนวณนี้เป็นเพียง Guideline เบื้องต้น แพทย์ควรเป็นผู้พิจารณาสั่งจ่ายยาและปรับขนาดยาตามความเหมาะสมทางคลินิก</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            )}
+
+            {/* --- PEDIATRIC VACCINE TAB (PIDST) --- */}
+            {activeTab === 'pediatric' && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-gray-800 border-b border-gray-300 pb-2 flex items-center gap-2">
+                  <Baby className="w-7 h-7 text-pink-500" /> ตารางวัคซีนเด็กไทย (EPI & PIDST)
+                </h2>
+                <p className="text-sm text-gray-600 mb-4">
+                  อ้างอิงตามแผนงานสร้างเสริมภูมิคุ้มกันโรค และสมาคมโรคติดเชื้อในเด็กแห่งประเทศไทย (PIDST)
+                </p>
+
+                {/* Calculator Section */}
+                <div className="bg-gradient-to-r from-pink-50 to-purple-50 p-6 rounded-3xl border border-pink-100 shadow-sm">
+                  <h3 className="font-bold text-pink-800 mb-3 flex items-center gap-2 text-lg">
+                    <CalendarDays className="w-5 h-5" /> ค้นหาวัคซีนตามช่วงวัย
+                  </h3>
+                  <div className="flex flex-col sm:flex-row gap-4 items-end">
+                    <div className="w-full sm:w-1/3">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">อายุ (ปี)</label>
+                      <input 
+                        type="number" min="0" max="15"
+                        value={childYears} onChange={(e) => setChildYears(e.target.value)} 
+                        placeholder="เช่น 1" 
+                        className="glass-input w-full p-3 rounded-xl text-lg font-bold text-center"
+                      />
+                    </div>
+                    <div className="w-full sm:w-1/3">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">อายุ (เดือน)</label>
+                      <input 
+                        type="number" min="0" max="11"
+                        value={childMonths} onChange={(e) => setChildMonths(e.target.value)} 
+                        placeholder="เช่น 6" 
+                        className="glass-input w-full p-3 rounded-xl text-lg font-bold text-center"
+                      />
+                    </div>
+                    <button 
+                      onClick={calculatePediatricVaccine}
+                      className="bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-6 rounded-xl w-full sm:w-auto transition-colors shadow-md"
+                    >
+                      ค้นหาวัคซีน
+                    </button>
+                  </div>
+
+                  {pediatricResult && (
+                    <div className="mt-5 bg-white p-5 rounded-2xl shadow-md border-l-4 border-pink-400 animate-fade-in">
+                      <h4 className="text-pink-600 font-bold text-lg mb-1">ช่วงวัย: {pediatricResult.label}</h4>
+                      <p className="text-gray-600 text-sm mb-3">{pediatricResult.desc}</p>
+                      
+                      <div className="bg-pink-50/50 p-4 rounded-xl border border-pink-100">
+                        <strong className="text-gray-800 block mb-2">รายการวัคซีนที่ควรได้รับ (แนะนำ):</strong>
+                        <ul className="space-y-2">
+                          {pediatricResult.vaccines.map((vac, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-gray-700 font-medium text-sm">
+                              <Syringe className="w-4 h-4 text-pink-400 mt-0.5 flex-shrink-0" />
+                              {vac}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Full Schedule Table with Interactive Tooltips */}
+                <div className="mt-8 bg-white rounded-3xl border border-gray-200 shadow-sm">
+                  <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 rounded-t-3xl">
+                    <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2">
+                      <Activity className="w-5 h-5 text-blue-500" /> ตารางภาพรวมการให้วัคซีน
+                    </h3>
+                  </div>
+                  <div className="p-1">
+                    <table className="w-full text-left text-sm text-gray-600">
+                      <thead className="bg-gray-100/50 text-gray-700">
+                        <tr>
+                          <th className="px-6 py-3 font-semibold border-b">อายุ (Age)</th>
+                          <th className="px-6 py-3 font-semibold border-b">วัคซีนพื้นฐาน (EPI) + วัคซีนเสริมที่แนะนำ</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {pediatricScheduleData.map((item, index) => {
+                          const isTopRows = index < 2; // Make tooltip point downwards for first two rows to avoid clipping at top
+                          return (
+                            <tr key={index} className="hover:bg-pink-50/30 transition-colors">
+                              <td className="px-6 py-4 font-bold text-gray-800 whitespace-nowrap bg-gray-50/30">
+                                {item.label}
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex flex-wrap gap-2 relative">
+                                  {item.vaccines.map((v, i) => {
+                                    const info = getVaccineInfo(v);
+                                    return (
+                                      <div key={i} className="group relative inline-block cursor-help">
+                                        <span className={`inline-block px-2.5 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-all group-hover:ring-2 ${v.includes('ทางเลือก') || v.includes('เสริม') ? 'bg-purple-100 text-purple-700 border border-purple-200 group-hover:ring-purple-300' : 'bg-blue-100 text-blue-700 border border-blue-200 group-hover:ring-blue-300'}`}>
+                                          {v}
+                                        </span>
+                                        
+                                        {/* Interactive Tooltip Card */}
+                                        <div className={`invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-300 absolute z-50 left-1/2 transform -translate-x-1/2 w-72 bg-white rounded-xl shadow-xl border border-gray-200 p-4 pointer-events-none
+                                          ${isTopRows ? 'top-full mt-2' : 'bottom-full mb-2'}`}>
+                                          
+                                          {/* Tooltip Arrow */}
+                                          <div className={`absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white border-gray-200 rotate-45
+                                            ${isTopRows ? '-top-2 border-t border-l' : '-bottom-2 border-b border-r'}`}>
+                                          </div>
+                                          
+                                          <h5 className="font-bold text-gray-800 mb-2 border-b pb-1.5 text-sm leading-tight">{v}</h5>
+                                          <div className="space-y-2.5 text-left">
+                                            <div>
+                                              <span className="flex items-center gap-1 text-xs font-bold text-red-500 mb-1">
+                                                <AlertTriangle className="w-3.5 h-3.5" /> อาการข้างเคียง:
+                                              </span>
+                                              <p className="text-xs text-gray-600 leading-relaxed">{info.se}</p>
+                                            </div>
+                                            <div>
+                                              <span className="flex items-center gap-1 text-xs font-bold text-green-600 mb-1">
+                                                <Lightbulb className="w-3.5 h-3.5" /> คำแนะนำ:
+                                              </span>
+                                              <p className="text-xs text-gray-600 leading-relaxed">{info.advice}</p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                                <p className="text-xs text-gray-500 mt-2">{item.desc}</p>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* --- GLOBALLY RENDERED REFERENCE SECTION --- */}
+            <ReferenceSection activeTab={activeTab} />
+
+          </div>
+        </div>
+      </main>
+      </div> {/* End Main App Wrapper */}
+
+      {/* --- HIDDEN PRINT AREA --- */}
+      <div id="print-area-container" className={`${isDownloading ? 'block bg-white mx-auto' : 'hidden print:block'} w-[210mm]`}>
+         {pagesToPrint.map((type, index) => (
+            <div key={type} className="print-page-wrapper">
+               {renderPrintPage(type)}
+               {index < pagesToPrint.length - 1 && <div className="html2pdf__page-break"></div>}
+            </div>
+         ))}
+      </div>
+
+    </div>
+  );
+};
+
+export default App;
