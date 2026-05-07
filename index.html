@@ -334,8 +334,8 @@
                instructions = `ฉีด 0.5 ml เข้ากล้ามเนื้อ (IM) ${woundType === 'dirty' ? '+ พิจารณา TIG' : ''}`;
                schedule = [
                 { day: 'เข็มที่ 1', date: addDays(d0, 0), note: woundType === 'dirty' ? '+ TIG' : '' },
-                { day: 'เข็มที่ 2', date: addMonths(d0, 1), note: '1 เดือน' },
-                { day: 'เข็มที่ 3', date: addMonths(d0, 6), note: '6 เดือน' }
+                { day: 'เข็มที่ 2', date: addMonths(d0, 1), note: 'ห่างเข็มแรก 1 ด.' },
+                { day: 'เข็มที่ 3', date: addMonths(d0, 7), note: 'ห่างเข็มสอง 6 ด.' }
               ];
             } else if (dtHistory === 'complete_more10' || (dtHistory === 'complete_more5_less10' && woundType === 'dirty')) {
               instructions = 'ฉีดกระตุ้น 0.5 ml เข้ากล้ามเนื้อ (IM) x 1 เข็ม';
