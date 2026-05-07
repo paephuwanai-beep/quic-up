@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>QUIC up KHONSAN</title>
     
     <!-- Fonts -->
@@ -615,38 +615,64 @@
                   </div>
                 </header>
 
-                <main className="no-print flex-grow p-4 md:p-6 lg:p-8 flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto w-full">
+                <main className="no-print flex-grow p-4 md:p-6 lg:p-8 pb-28 lg:pb-8 flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto w-full">
                   
-                  {/* Sidebar */}
-                  <div className="w-full lg:w-1/4 flex flex-col gap-3">
-                    <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 ml-2">ใบนัดผู้ป่วย (Appointments)</div>
+                  {/* Sidebar / Bottom Navigation (Responsive) */}
+                  <nav className="fixed bottom-0 left-0 right-0 z-[100] bg-white/95 backdrop-blur-md border-t border-gray-200 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 flex justify-around items-end shadow-[0_-4px_10px_rgba(0,0,0,0.05)] lg:static lg:bg-transparent lg:border-none lg:shadow-none lg:p-0 lg:flex-col lg:justify-start lg:w-1/4 lg:gap-3 lg:z-auto">
+                    
+                    <div className="hidden lg:block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 ml-2">ใบนัดผู้ป่วย (Appointments)</div>
+                    
+                    {/* Button: Rabies */}
                     <button 
                       onClick={() => setActiveTab('rabies')}
-                      className={`flex items-center gap-3 p-4 rounded-2xl font-semibold transition-all shadow-sm ${activeTab === 'rabies' ? 'bg-blue-600 text-white shadow-md transform scale-105' : 'glass-panel text-gray-600 hover:bg-white/60'}`}
+                      className={`flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-3 p-1.5 lg:p-4 rounded-xl lg:rounded-2xl font-semibold transition-all w-1/4 lg:w-full ${activeTab === 'rabies' ? 'text-blue-600 lg:bg-blue-600 lg:text-white lg:shadow-md lg:transform lg:scale-105' : 'text-gray-500 lg:glass-panel hover:bg-gray-50 lg:hover:bg-white/60'}`}
                     >
-                      <Syringe className="w-6 h-6" /> ใบนัด Rabies & CPG & ATB
-                    </button>
-                    <button 
-                      onClick={() => setActiveTab('tetanus')}
-                      className={`flex items-center gap-3 p-4 rounded-2xl font-semibold transition-all shadow-sm ${activeTab === 'tetanus' ? 'bg-teal-600 text-white shadow-md transform scale-105' : 'glass-panel text-gray-600 hover:bg-white/60'}`}
-                    >
-                      <AlertCircle className="w-6 h-6" /> ใบนัด Tetanus (dT)
-                    </button>
-                    <button 
-                      onClick={() => setActiveTab('hbv')}
-                      className={`flex items-center gap-3 p-4 rounded-2xl font-semibold transition-all shadow-sm ${activeTab === 'hbv' ? 'bg-indigo-600 text-white shadow-md transform scale-105' : 'glass-panel text-gray-600 hover:bg-white/60'}`}
-                    >
-                      <Activity className="w-6 h-6" /> ใบนัด ไวรัสตับอักเสบบี (HBV)
+                      <div className={`p-1.5 rounded-xl lg:p-0 lg:bg-transparent transition-colors ${activeTab === 'rabies' ? 'bg-blue-100 lg:bg-transparent' : ''}`}>
+                        <Syringe className="w-6 h-6 lg:w-6 lg:h-6" />
+                      </div>
+                      <span className="text-[10px] lg:text-base hidden lg:block text-left w-full">ใบนัด Rabies & CPG</span>
+                      <span className="text-[11px] font-bold lg:hidden">Rabies</span>
                     </button>
 
-                    <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mt-4 mb-1 ml-2">เครื่องมือแพทย์ (Tools)</div>
+                    {/* Button: Tetanus */}
+                    <button 
+                      onClick={() => setActiveTab('tetanus')}
+                      className={`flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-3 p-1.5 lg:p-4 rounded-xl lg:rounded-2xl font-semibold transition-all w-1/4 lg:w-full ${activeTab === 'tetanus' ? 'text-teal-600 lg:bg-teal-600 lg:text-white lg:shadow-md lg:transform lg:scale-105' : 'text-gray-500 lg:glass-panel hover:bg-gray-50 lg:hover:bg-white/60'}`}
+                    >
+                      <div className={`p-1.5 rounded-xl lg:p-0 lg:bg-transparent transition-colors ${activeTab === 'tetanus' ? 'bg-teal-100 lg:bg-transparent' : ''}`}>
+                        <AlertCircle className="w-6 h-6 lg:w-6 lg:h-6" />
+                      </div>
+                      <span className="text-[10px] lg:text-base hidden lg:block text-left w-full">ใบนัด Tetanus (dT)</span>
+                      <span className="text-[11px] font-bold lg:hidden">Tetanus</span>
+                    </button>
+
+                    {/* Button: HBV */}
+                    <button 
+                      onClick={() => setActiveTab('hbv')}
+                      className={`flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-3 p-1.5 lg:p-4 rounded-xl lg:rounded-2xl font-semibold transition-all w-1/4 lg:w-full ${activeTab === 'hbv' ? 'text-indigo-600 lg:bg-indigo-600 lg:text-white lg:shadow-md lg:transform lg:scale-105' : 'text-gray-500 lg:glass-panel hover:bg-gray-50 lg:hover:bg-white/60'}`}
+                    >
+                      <div className={`p-1.5 rounded-xl lg:p-0 lg:bg-transparent transition-colors ${activeTab === 'hbv' ? 'bg-indigo-100 lg:bg-transparent' : ''}`}>
+                        <Activity className="w-6 h-6 lg:w-6 lg:h-6" />
+                      </div>
+                      <span className="text-[10px] lg:text-base hidden lg:block text-left w-full">ใบนัด ไวรัสตับอักเสบบี</span>
+                      <span className="text-[11px] font-bold lg:hidden">HBV</span>
+                    </button>
+
+                    <div className="hidden lg:block text-xs font-bold text-gray-500 uppercase tracking-wider mt-4 mb-1 ml-2">เครื่องมือแพทย์ (Tools)</div>
+
+                    {/* Button: Pediatric */}
                     <button 
                       onClick={() => setActiveTab('pediatric')}
-                      className={`flex items-center gap-3 p-4 rounded-2xl font-semibold transition-all shadow-sm ${activeTab === 'pediatric' ? 'bg-pink-500 text-white shadow-md transform scale-105' : 'glass-panel text-gray-600 hover:bg-white/60'}`}
+                      className={`flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-3 p-1.5 lg:p-4 rounded-xl lg:rounded-2xl font-semibold transition-all w-1/4 lg:w-full ${activeTab === 'pediatric' ? 'text-pink-600 lg:bg-pink-500 lg:text-white lg:shadow-md lg:transform lg:scale-105' : 'text-gray-500 lg:glass-panel hover:bg-gray-50 lg:hover:bg-white/60'}`}
                     >
-                      <Baby className="w-6 h-6" /> ตารางวัคซีนเด็ก (PIDST)
+                      <div className={`p-1.5 rounded-xl lg:p-0 lg:bg-transparent transition-colors ${activeTab === 'pediatric' ? 'bg-pink-100 lg:bg-transparent' : ''}`}>
+                        <Baby className="w-6 h-6 lg:w-6 lg:h-6" />
+                      </div>
+                      <span className="text-[10px] lg:text-base hidden lg:block text-left w-full">ตารางวัคซีนเด็ก</span>
+                      <span className="text-[11px] font-bold lg:hidden">เด็ก (EPI)</span>
                     </button>
-                  </div>
+
+                  </nav>
 
                 {/* Content Area */}
                 <div className="w-full lg:w-3/4 flex flex-col gap-6">
