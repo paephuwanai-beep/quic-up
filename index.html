@@ -5,20 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>QUIC up KHONSAN</title>
     
-    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
-    <!-- Babel for compiling JSX in the browser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
@@ -88,8 +85,7 @@
 <body class="bg-gray-50">
     <div id="root"></div>
 
-    <!-- React App Script -->
-    <script type="text/babel">
+    <script type="text/babel" data-presets="react,env">
         const { useState, useEffect } = React;
 
         // --- Icon Component Mappers (Using FontAwesome) ---
@@ -253,17 +249,6 @@
           const erigData = calculateErig(erigWeight);
 
           const [isDownloading, setIsDownloading] = useState(false);
-
-          useEffect(() => {
-            const scriptId = 'html2pdf-script';
-            if (!document.getElementById(scriptId)) {
-              const script = document.createElement('script');
-              script.id = scriptId;
-              script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-              script.async = true;
-              document.body.appendChild(script);
-            }
-          }, []);
 
           const handlePatientChange = (e) => {
             const { name, value } = e.target;
