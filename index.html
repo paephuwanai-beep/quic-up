@@ -91,7 +91,7 @@
 <body class="bg-gray-50">
     <div id="root"></div>
 
-    <!-- บังคับให้ Babel ประมวลผลแค่ React อย่างเดียว เพื่อไม่ให้เกิดบั๊ก Import -->
+    <!-- บังคับให้ Babel ประมวลผลแค่ React อย่างเดียว และดึง Hooks จาก React โดยตรง ไม่ใช้ import -->
     <script type="text/babel" data-presets="react">
         const { useState, useEffect } = React;
 
